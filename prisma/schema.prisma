@@ -61,15 +61,16 @@ model Lesson {
 }
 
 model Enrollment {
-  id        String   @id @default(cuid())
-  progress  Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String    @id @default(cuid())
+  progress     Int       @default(0)
+  lastLessonId String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   studentId String
   student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  courseId   String
+  courseId  String
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, courseId])

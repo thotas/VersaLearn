@@ -3,8 +3,9 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Calendar, TrendingUp, Heart } from "lucide-react";
+import { BookOpen, Calendar, TrendingUp, Heart, Play, Clock } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { StudentCalendar } from "@/components/student-calendar";
 import { CourseCard } from "@/components/course-card";
 
@@ -22,6 +23,7 @@ export default async function StudentDashboard() {
           include: {
             tutor: { select: { name: true, avatar: true } },
             _count: { select: { lessons: true } },
+            lessons: { orderBy: { order: "asc" }, select: { id: true, title: true, order: true, duration: true } },
           },
         },
       },
@@ -48,6 +50,28 @@ export default async function StudentDashboard() {
 
   const wishlistCourses = wishlist.map((w) => w.course);
 
+  // Find the most recently accessed course (with lastLessonId or most recently enrolled)
+  const recentEnrollment = enrollments
+    .filter((e) => e.lastLessonId || e.progress > 0)
+    .sort((a, b) => {
+      if (a.lastLessonId && !b.lastLessonId) return -1;
+      if (!a.lastLessonId && b.lastLessonId) return 1;
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    })[0];
+
+  // Get the lesson to resume from
+  let lessonToResume = null;
+  let courseToResume = null;
+  if (recentEnrollment) {
+    courseToResume = recentEnrollment.course;
+    if (recentEnrollment.lastLessonId) {
+      const lesson = courseToResume.lessons?.find((l: { id: string }) => l.id === recentEnrollment.lastLessonId);
+      lessonToResume = lesson || courseToResume.lessons?.[0];
+    } else {
+      lessonToResume = courseToResume.lessons?.[0];
+    }
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="mb-8">
@@ -56,6 +80,52 @@ export default async function StudentDashboard() {
           Track your courses and manage your schedule
         </p>
       </div>
+
+      {/* Continue Learning Banner */}
+      {courseToResume && lessonToResume && (
+        <Card className="mb-10 border-indigo-600/30 bg-gradient-to-r from-indigo-600/10 to-purple-600/10">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-indigo-600/20">
+                  <Play className="h-7 w-7 text-indigo-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-indigo-400 font-medium">Continue Learning</p>
+                  <h3 className="text-lg font-semibold text-white mt-0.5">
+                    {courseToResume.title}
+                  </h3>
+                  <div className="flex items-center gap-3 mt-1">
+                    <div className="flex items-center gap-1.5 text-sm text-zinc-400">
+                      <Clock className="h-3.5 w-3.5" />
+                      {lessonToResume?.title || "Start course"}
+                    </div>
+                    <span className="text-zinc-600">•</span>
+                    <span className="text-sm text-zinc-400">
+                      {recentEnrollment.progress}% complete
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <Link href={`/courses/${courseToResume.slug}/lessons/${lessonToResume.id}`}>
+                <Button size="lg" className="gap-2">
+                  <Play className="h-4 w-4" />
+                  {recentEnrollment.progress > 0 ? "Resume" : "Start"}
+                </Button>
+              </Link>
+            </div>
+            {/* Progress bar */}
+            <div className="mt-4">
+              <div className="h-2 w-full rounded-full bg-zinc-800">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 transition-all duration-300"
+                  style={{ width: `${recentEnrollment.progress}%` }}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-3 mb-10">

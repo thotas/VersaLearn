@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { EnrollButton } from "@/components/enroll-button";
 import { WishlistButton } from "@/components/wishlist-button";
-import { BookOpen, Clock, Users, ArrowLeft } from "lucide-react";
+import { BookOpen, Clock, Users, ArrowLeft, Play } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -33,6 +33,7 @@ export default async function CoursePage({
 
   let isEnrolled = false;
   let inWishlist = false;
+  let enrollmentData = null;
 
   if (session?.user) {
     const [enrollment, wishlist] = await Promise.all([
@@ -55,6 +56,7 @@ export default async function CoursePage({
     ]);
     isEnrolled = !!enrollment;
     inWishlist = !!wishlist;
+    enrollmentData = enrollment;
   }
 
   const totalDuration = course.lessons.reduce(
@@ -149,29 +151,63 @@ export default async function CoursePage({
           {/* Enroll card */}
           <Card className="sticky top-24">
             <CardContent className="p-6 space-y-6">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-white">Free</p>
-                <p className="text-sm text-zinc-500 mt-1">
-                  No payment required
-                </p>
-              </div>
-              {session?.user ? (
-                session.user.id !== course.tutorId && (
-                  <div className="flex gap-3">
-                    <EnrollButton
-                      courseId={course.id}
-                      isEnrolled={isEnrolled}
-                    />
-                    <WishlistButton
-                      courseId={course.id}
-                      initialInWishlist={inWishlist}
-                    />
+              {isEnrolled ? (
+                <>
+                  {/* Continue Learning Section */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-zinc-400">Your Progress</span>
+                      <span className="font-medium text-white">{enrollmentData?.progress ?? 0}%</span>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-zinc-800">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-indigo-600 to-purple-600"
+                        style={{ width: `${enrollmentData?.progress ?? 0}%` }}
+                      />
+                    </div>
+                    <Link
+                      href={
+                        enrollmentData?.lastLessonId
+                          ? `/courses/${slug}/lessons/${enrollmentData.lastLessonId}`
+                          : course.lessons[0]
+                          ? `/courses/${slug}/lessons/${course.lessons[0].id}`
+                          : "#"
+                      }
+                    >
+                      <Button className="w-full gap-2">
+                        <Play className="h-4 w-4" />
+                        {enrollmentData?.progress && enrollmentData.progress > 0 ? "Continue Learning" : "Start Course"}
+                      </Button>
+                    </Link>
                   </div>
-                )
+                </>
               ) : (
-                <Link href="/login">
-                  <Button className="w-full">Sign in to Enroll</Button>
-                </Link>
+                <>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-white">Free</p>
+                    <p className="text-sm text-zinc-500 mt-1">
+                      No payment required
+                    </p>
+                  </div>
+                  {session?.user ? (
+                    session.user.id !== course.tutorId && (
+                      <div className="flex gap-3">
+                        <EnrollButton
+                          courseId={course.id}
+                          isEnrolled={isEnrolled}
+                        />
+                        <WishlistButton
+                          courseId={course.id}
+                          initialInWishlist={inWishlist}
+                        />
+                      </div>
+                    )
+                  ) : (
+                    <Link href="/login">
+                      <Button className="w-full">Sign in to Enroll</Button>
+                    </Link>
+                  )}
+                </>
               )}
 
               {/* Tutor info */}

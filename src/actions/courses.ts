@@ -218,3 +218,39 @@ export async function unenrollFromCourse(courseId: string) {
   revalidatePath("/dashboard/student");
   return { success: true };
 }
+
+export async function updateLearningProgress(courseId: string, lessonId: string, totalLessons: number) {
+  const session = await auth();
+  if (!session?.user) {
+    return { error: "Unauthorized" };
+  }
+
+  // Get the lesson to calculate progress
+  const lesson = await prisma.lesson.findUnique({
+    where: { id: lessonId },
+  });
+
+  if (!lesson || lesson.courseId !== courseId) {
+    return { error: "Lesson not found" };
+  }
+
+  // Calculate progress as percentage of lessons completed up to and including this lesson
+  const progress = Math.min(100, Math.round((lesson.order / totalLessons) * 100));
+
+  await prisma.enrollment.update({
+    where: {
+      studentId_courseId: {
+        studentId: session.user.id,
+        courseId,
+      },
+    },
+    data: {
+      lastLessonId: lessonId,
+      progress,
+    },
+  });
+
+  revalidatePath("/dashboard/student");
+  revalidatePath(`/courses/${lesson.courseId}`);
+  return { success: true, progress };
+}
