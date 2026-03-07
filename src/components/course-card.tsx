@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { BookOpen, Users } from "lucide-react";
 import { WishlistButton } from "@/components/wishlist-button";
+import { EnrollButton } from "@/components/enroll-button";
 
 interface CourseCardProps {
   course: {
@@ -25,9 +26,17 @@ interface CourseCardProps {
   };
   inWishlist?: boolean;
   showWishlist?: boolean;
+  showEnrollButton?: boolean;
+  isEnrolled?: boolean;
 }
 
-export function CourseCard({ course, inWishlist = false, showWishlist = true }: CourseCardProps) {
+export function CourseCard({
+  course,
+  inWishlist = false,
+  showWishlist = true,
+  showEnrollButton = false,
+  isEnrolled = false,
+}: CourseCardProps) {
   return (
     <Link href={`/courses/${course.slug}`}>
       <Card className="group h-full hover:border-zinc-700 hover:bg-zinc-900/80 transition-all duration-300">
@@ -47,9 +56,16 @@ export function CourseCard({ course, inWishlist = false, showWishlist = true }: 
                 {course.level}
               </Badge>
             </div>
-            {showWishlist && (
-              <WishlistButton courseId={course.id} initialInWishlist={inWishlist} />
-            )}
+            <div className="flex items-center gap-2">
+              {showEnrollButton && !isEnrolled && (
+                <span onClick={(e) => e.preventDefault()}>
+                  <EnrollButton courseId={course.id} isEnrolled={isEnrolled} />
+                </span>
+              )}
+              {showWishlist && (
+                <WishlistButton courseId={course.id} initialInWishlist={inWishlist} />
+              )}
+            </div>
           </div>
           <h3 className="text-lg font-semibold text-white group-hover:text-indigo-400 transition-colors duration-200 line-clamp-1">
             {course.title}

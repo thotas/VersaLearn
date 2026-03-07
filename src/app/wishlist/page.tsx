@@ -28,6 +28,17 @@ export default async function WishlistPage() {
 
   const courses = wishlistCourses.map((w) => w.course);
 
+  // Get enrollment status for each course
+  const enrollments = await prisma.enrollment.findMany({
+    where: {
+      studentId: session.user.id,
+      courseId: { in: courses.map((c) => c.id) },
+    },
+    select: { courseId: true },
+  });
+
+  const enrolledCourseIds = new Set(enrollments.map((e) => e.courseId));
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <Link href="/marketplace">
@@ -73,6 +84,8 @@ export default async function WishlistPage() {
                 key={course.id}
                 course={course}
                 inWishlist={true}
+                showEnrollButton={true}
+                isEnrolled={enrolledCourseIds.has(course.id)}
               />
             ))}
           </div>

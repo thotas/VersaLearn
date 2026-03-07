@@ -36,6 +36,7 @@ export async function toggleWishlist(courseId: string) {
     revalidatePath("/dashboard");
     revalidatePath("/marketplace");
     revalidatePath("/");
+    revalidatePath("/wishlist");
     return { success: true, inWishlist: false };
   } else {
     // Add to wishlist
@@ -48,6 +49,7 @@ export async function toggleWishlist(courseId: string) {
     revalidatePath("/dashboard");
     revalidatePath("/marketplace");
     revalidatePath("/");
+    revalidatePath("/wishlist");
     return { success: true, inWishlist: true };
   }
 }
@@ -96,4 +98,20 @@ export async function getWishlistCourses() {
   });
 
   return wishlist.map((w) => w.course);
+}
+
+export async function getWishlistCount() {
+  const session = await auth();
+
+  if (!session?.user) {
+    return 0;
+  }
+
+  const count = await prisma.wishlist.count({
+    where: {
+      userId: session.user.id,
+    },
+  });
+
+  return count;
 }

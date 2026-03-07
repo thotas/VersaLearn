@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { toggleWishlist, getWishlistStatus } from "@/actions/wishlist";
-import { Heart } from "lucide-react";
+import { toggleWishlist } from "@/actions/wishlist";
+import { Heart, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 
 interface WishlistButtonProps {
   courseId: string;
@@ -16,13 +17,21 @@ export function WishlistButton({
   initialInWishlist = false,
 }: WishlistButtonProps) {
   const [inWishlist, setInWishlist] = useState(initialInWishlist);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
-  const handleToggle = () => {
+  const handleToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     startTransition(async () => {
       const result = await toggleWishlist(courseId);
       if (result.success) {
         setInWishlist(result.inWishlist);
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 1500);
+        // Refresh to update navbar wishlist count
+        router.refresh();
       }
     });
   };
@@ -31,7 +40,7 @@ export function WishlistButton({
     <Button
       variant="ghost"
       size="sm"
-      onClick={handleToggle}
+      onClick={(e) => handleToggle(e)}
       disabled={isPending}
       className={`p-2 h-auto transition-colors ${
         inWishlist
@@ -40,9 +49,13 @@ export function WishlistButton({
       }`}
       title={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
     >
-      <Heart
-        className={`h-5 w-5 ${inWishlist ? "fill-current" : ""} transition-all`}
-      />
+      {showSuccess ? (
+        <Check className="h-5 w-5 text-green-500 animate-bounce" />
+      ) : (
+        <Heart
+          className={`h-5 w-5 ${inWishlist ? "fill-current" : ""} transition-all`}
+        />
+      )}
     </Button>
   );
 }

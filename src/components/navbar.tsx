@@ -18,7 +18,9 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { Avatar } from "./ui/avatar";
-import { useState } from "react";
+import { Badge } from "./ui/badge";
+import { useState, useEffect, use } from "react";
+import { getWishlistCount } from "@/actions/wishlist";
 
 interface NavbarProps {
   user?: {
@@ -38,6 +40,13 @@ const publicLinks = [
 export function Navbar({ user }: NavbarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [wishlistCount, setWishlistCount] = useState(0);
+
+  useEffect(() => {
+    if (user) {
+      getWishlistCount().then(setWishlistCount);
+    }
+  }, [user]);
 
   const dashboardHref =
     user?.role === "tutor" ? "/dashboard/tutor" : "/dashboard/student";
@@ -82,7 +91,14 @@ export function Navbar({ user }: NavbarProps) {
                       : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
                   )}
                 >
-                  <Heart className="h-4 w-4" />
+                  <div className="relative">
+                    <Heart className="h-4 w-4" />
+                    {wishlistCount > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                        {wishlistCount > 9 ? "9+" : wishlistCount}
+                      </span>
+                    )}
+                  </div>
                   Wishlist
                 </Link>
                 <Link
@@ -181,7 +197,14 @@ export function Navbar({ user }: NavbarProps) {
                       : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
                   )}
                 >
-                  <Heart className="h-4 w-4" />
+                  <div className="relative">
+                    <Heart className="h-4 w-4" />
+                    {wishlistCount > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                        {wishlistCount > 9 ? "9+" : wishlistCount}
+                      </span>
+                    )}
+                  </div>
                   Wishlist
                 </Link>
                 <Link
