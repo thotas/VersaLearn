@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { auth } from "@/lib/auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
@@ -10,7 +11,9 @@ import {
   GraduationCap,
   Users,
   Sparkles,
+  Heart,
 } from "lucide-react";
+import { CourseCard } from "@/components/course-card";
 
 const categories = [
   { name: "Web Development", icon: "🌐", color: "from-blue-600 to-cyan-600" },
@@ -22,6 +25,8 @@ const categories = [
 ];
 
 export default async function Home() {
+  const session = await auth();
+
   const [featuredCourses, courseCount, tutorCount, studentCount] =
     await Promise.all([
       prisma.course.findMany({
@@ -37,6 +42,16 @@ export default async function Home() {
       prisma.user.count({ where: { role: "tutor" } }),
       prisma.user.count({ where: { role: "student" } }),
     ]);
+
+  // Get user's wishlist if logged in
+  let wishlistCourseIds: string[] = [];
+  if (session?.user) {
+    const wishlist = await prisma.wishlist.findMany({
+      where: { userId: session.user.id },
+      select: { courseId: true },
+    });
+    wishlistCourseIds = wishlist.map((w) => w.courseId);
+  }
 
   return (
     <div className="min-h-screen">
@@ -121,46 +136,29 @@ export default async function Home() {
               Hand-picked courses to get you started
             </p>
           </div>
-          <Link href="/marketplace">
-            <Button variant="ghost" className="gap-2">
-              View all <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            {session?.user && (
+              <Link href="/wishlist">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <Heart className="h-4 w-4" />
+                  Wishlist
+                </Button>
+              </Link>
+            )}
+            <Link href="/marketplace">
+              <Button variant="ghost" className="gap-2">
+                View all <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
           {featuredCourses.map((course) => (
-            <Link key={course.id} href={`/courses/${course.slug}`}>
-              <Card className="group h-full hover:border-zinc-700 hover:bg-zinc-900/80 transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Badge>{course.category}</Badge>
-                    <Badge variant="secondary">{course.level}</Badge>
-                  </div>
-                  <h3 className="text-lg font-semibold text-white group-hover:text-indigo-400 transition-colors duration-200">
-                    {course.title}
-                  </h3>
-                  <p className="mt-2 text-sm text-zinc-400 line-clamp-2">
-                    {course.description}
-                  </p>
-                  <div className="mt-6 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Avatar
-                        name={course.tutor.name}
-                        src={course.tutor.avatar}
-                        size="sm"
-                      />
-                      <span className="text-sm text-zinc-300">
-                        {course.tutor.name}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs text-zinc-500">
-                      <span>{course._count.lessons} lessons</span>
-                      <span>{course._count.enrollments} enrolled</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+            <CourseCard
+              key={course.id}
+              course={course}
+              inWishlist={wishlistCourseIds.includes(course.id)}
+            />
           ))}
         </div>
       </section>

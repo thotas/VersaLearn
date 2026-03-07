@@ -6,6 +6,7 @@ import { signOut } from "next-auth/react";
 import {
   BookOpen,
   GraduationCap,
+  Heart,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -71,18 +72,32 @@ export function Navbar({ user }: NavbarProps) {
               </Link>
             ))}
             {user && (
-              <Link
-                href={dashboardHref}
-                className={cn(
-                  "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200",
-                  pathname.startsWith("/dashboard")
-                    ? "bg-zinc-800 text-white"
-                    : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
-                )}
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                Dashboard
-              </Link>
+              <>
+                <Link
+                  href="/wishlist"
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200",
+                    pathname === "/wishlist"
+                      ? "bg-zinc-800 text-white"
+                      : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
+                  )}
+                >
+                  <Heart className="h-4 w-4" />
+                  Wishlist
+                </Link>
+                <Link
+                  href={dashboardHref}
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200",
+                    pathname.startsWith("/dashboard")
+                      ? "bg-zinc-800 text-white"
+                      : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
+                  )}
+                >
+                  <LayoutDashboard className="h-4 w-4" />
+                  Dashboard
+                </Link>
+              </>
             )}
           </div>
 
@@ -156,6 +171,19 @@ export function Navbar({ user }: NavbarProps) {
             ))}
             {user && (
               <>
+                <Link
+                  href="/wishlist"
+                  onClick={() => setMobileOpen(false)}
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                    pathname === "/wishlist"
+                      ? "bg-zinc-800 text-white"
+                      : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
+                  )}
+                >
+                  <Heart className="h-4 w-4" />
+                  Wishlist
+                </Link>
                 <Link
                   href={dashboardHref}
                   onClick={() => setMobileOpen(false)}

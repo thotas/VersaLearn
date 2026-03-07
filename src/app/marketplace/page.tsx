@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar } from "@/components/ui/avatar";
+import { auth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Search, Users } from "lucide-react";
+import { Search, Heart } from "lucide-react";
 import { MarketplaceFilters } from "@/components/marketplace-filters";
+import { CourseCard } from "@/components/course-card";
 
 const categories = [
   "All",
@@ -25,6 +24,8 @@ export default async function MarketplacePage({
   searchParams: Promise<{ category?: string; level?: string; q?: string }>;
 }) {
   const params = await searchParams;
+  const session = await auth();
+
   const where: Record<string, unknown> = { published: true };
 
   if (params.category && params.category !== "All") {
@@ -49,13 +50,33 @@ export default async function MarketplacePage({
     orderBy: { createdAt: "desc" },
   });
 
+  // Get user's wishlist if logged in
+  let wishlistCourseIds: string[] = [];
+  if (session?.user) {
+    const wishlist = await prisma.wishlist.findMany({
+      where: { userId: session.user.id },
+      select: { courseId: true },
+    });
+    wishlistCourseIds = wishlist.map((w) => w.courseId);
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">Course Marketplace</h1>
-        <p className="mt-2 text-zinc-400">
-          Discover courses from expert tutors across all disciplines
-        </p>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Course Marketplace</h1>
+          <p className="mt-2 text-zinc-400">
+            Discover courses from expert tutors across all disciplines
+          </p>
+        </div>
+        {session?.user && (
+          <Link href="/wishlist">
+            <Button variant="outline" className="gap-2">
+              <Heart className="h-4 w-4" />
+              My Wishlist
+            </Button>
+          </Link>
+        )}
       </div>
 
       <MarketplaceFilters
@@ -79,54 +100,11 @@ export default async function MarketplacePage({
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {courses.map((course) => (
-            <Link key={course.id} href={`/courses/${course.slug}`}>
-              <Card className="group h-full hover:border-zinc-700 hover:bg-zinc-900/80 transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Badge>{course.category}</Badge>
-                    <Badge
-                      variant={
-                        course.level === "advanced"
-                          ? "warning"
-                          : course.level === "intermediate"
-                          ? "default"
-                          : "success"
-                      }
-                    >
-                      {course.level}
-                    </Badge>
-                  </div>
-                  <h3 className="text-lg font-semibold text-white group-hover:text-indigo-400 transition-colors duration-200 line-clamp-1">
-                    {course.title}
-                  </h3>
-                  <p className="mt-2 text-sm text-zinc-400 line-clamp-2">
-                    {course.description}
-                  </p>
-                  <div className="mt-6 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Avatar
-                        name={course.tutor.name}
-                        src={course.tutor.avatar}
-                        size="sm"
-                      />
-                      <span className="text-sm text-zinc-300">
-                        {course.tutor.name}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs text-zinc-500">
-                      <span className="flex items-center gap-1">
-                        <BookOpen className="h-3 w-3" />
-                        {course._count.lessons}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        {course._count.enrollments}
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+            <CourseCard
+              key={course.id}
+              course={course}
+              inWishlist={wishlistCourseIds.includes(course.id)}
+            />
           ))}
         </div>
       )}

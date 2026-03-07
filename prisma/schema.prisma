@@ -23,6 +23,7 @@ model User {
   blogPosts      BlogPost[]
   enrollments    Enrollment[]
   calendarEvents CalendarEvent[]
+  wishlist       Wishlist[]
 }
 
 model Course {
@@ -43,6 +44,7 @@ model Course {
 
   lessons     Lesson[]
   enrollments Enrollment[]
+  wishlist    Wishlist[]
 }
 
 model Lesson {
@@ -101,4 +103,17 @@ model BlogPost {
 
   authorId    String
   author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Wishlist {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
 }

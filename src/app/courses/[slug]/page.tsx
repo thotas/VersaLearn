@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { EnrollButton } from "@/components/enroll-button";
+import { WishlistButton } from "@/components/wishlist-button";
 import { BookOpen, Clock, Users, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -31,16 +32,29 @@ export default async function CoursePage({
   if (!course) notFound();
 
   let isEnrolled = false;
+  let inWishlist = false;
+
   if (session?.user) {
-    const enrollment = await prisma.enrollment.findUnique({
-      where: {
-        studentId_courseId: {
-          studentId: session.user.id,
-          courseId: course.id,
+    const [enrollment, wishlist] = await Promise.all([
+      prisma.enrollment.findUnique({
+        where: {
+          studentId_courseId: {
+            studentId: session.user.id,
+            courseId: course.id,
+          },
         },
-      },
-    });
+      }),
+      prisma.wishlist.findUnique({
+        where: {
+          userId_courseId: {
+            userId: session.user.id,
+            courseId: course.id,
+          },
+        },
+      }),
+    ]);
     isEnrolled = !!enrollment;
+    inWishlist = !!wishlist;
   }
 
   const totalDuration = course.lessons.reduce(
@@ -143,10 +157,16 @@ export default async function CoursePage({
               </div>
               {session?.user ? (
                 session.user.id !== course.tutorId && (
-                  <EnrollButton
-                    courseId={course.id}
-                    isEnrolled={isEnrolled}
-                  />
+                  <div className="flex gap-3">
+                    <EnrollButton
+                      courseId={course.id}
+                      isEnrolled={isEnrolled}
+                    />
+                    <WishlistButton
+                      courseId={course.id}
+                      initialInWishlist={inWishlist}
+                    />
+                  </div>
                 )
               ) : (
                 <Link href="/login">

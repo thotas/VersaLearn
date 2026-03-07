@@ -3,10 +3,10 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Calendar, TrendingUp } from "lucide-react";
+import { BookOpen, Calendar, TrendingUp, Heart } from "lucide-react";
 import Link from "next/link";
 import { StudentCalendar } from "@/components/student-calendar";
-import { formatDate } from "@/lib/utils";
+import { CourseCard } from "@/components/course-card";
 
 export default async function StudentDashboard() {
   const session = await auth();
@@ -14,7 +14,7 @@ export default async function StudentDashboard() {
     redirect("/login");
   }
 
-  const [enrollments, calendarEvents] = await Promise.all([
+  const [enrollments, calendarEvents, wishlist] = await Promise.all([
     prisma.enrollment.findMany({
       where: { studentId: session.user.id },
       include: {
@@ -31,7 +31,22 @@ export default async function StudentDashboard() {
       where: { userId: session.user.id },
       orderBy: { startTime: "asc" },
     }),
+    prisma.wishlist.findMany({
+      where: { userId: session.user.id },
+      include: {
+        course: {
+          include: {
+            tutor: { select: { id: true, name: true, avatar: true } },
+            _count: { select: { enrollments: true, lessons: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 3,
+    }),
   ]);
+
+  const wishlistCourses = wishlist.map((w) => w.course);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -166,15 +181,53 @@ export default async function StudentDashboard() {
           )}
         </div>
 
-        {/* Calendar */}
+        {/* Wishlist */}
         <div>
-          <h2 className="text-xl font-semibold text-white mb-4">
-            My Calendar
-          </h2>
-          <StudentCalendar
-            initialEvents={JSON.parse(JSON.stringify(calendarEvents))}
-          />
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-white">
+              My Wishlist
+            </h2>
+            <Link href="/wishlist">
+              <span className="text-sm text-indigo-400 hover:text-indigo-300 cursor-pointer">
+                View all
+              </span>
+            </Link>
+          </div>
+          {wishlistCourses.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center py-12 text-center">
+                <Heart className="h-12 w-12 text-zinc-600 mb-4" />
+                <h3 className="text-lg font-medium text-zinc-300">
+                  No saved courses
+                </h3>
+                <p className="mt-1 text-sm text-zinc-500">
+                  Click the heart icon on courses to save them here
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {wishlistCourses.map((course) => (
+                <CourseCard
+                  key={course.id}
+                  course={course}
+                  inWishlist={true}
+                  showWishlist={true}
+                />
+              ))}
+            </div>
+          )}
         </div>
+      </div>
+
+      {/* Calendar */}
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold text-white mb-4">
+          My Calendar
+        </h2>
+        <StudentCalendar
+          initialEvents={JSON.parse(JSON.stringify(calendarEvents))}
+        />
       </div>
     </div>
   );
