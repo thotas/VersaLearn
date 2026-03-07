@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X } from "lucide-react";
+import { Search, X, ArrowUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MarketplaceFiltersProps {
@@ -13,7 +13,15 @@ interface MarketplaceFiltersProps {
   currentCategory?: string;
   currentLevel?: string;
   currentQuery?: string;
+  currentSort?: string;
 }
+
+const sortOptions = [
+  { value: "newest", label: "Newest" },
+  { value: "popular", label: "Most Popular" },
+  { value: "lessons", label: "Most Lessons" },
+  { value: "title_asc", label: "A-Z" },
+];
 
 export function MarketplaceFilters({
   categories,
@@ -21,6 +29,7 @@ export function MarketplaceFilters({
   currentCategory,
   currentLevel,
   currentQuery,
+  currentSort = "newest",
 }: MarketplaceFiltersProps) {
   const router = useRouter();
   const [query, setQuery] = useState(currentQuery || "");
@@ -31,14 +40,16 @@ export function MarketplaceFilters({
       const cat = key === "category" ? value : currentCategory;
       const lvl = key === "level" ? value : currentLevel;
       const q = key === "q" ? value : query;
+      const sort = key === "sort" ? value : currentSort;
 
       if (cat && cat !== "All") params.set("category", cat);
       if (lvl && lvl !== "All") params.set("level", lvl);
       if (q) params.set("q", q);
+      if (sort && sort !== "newest") params.set("sort", sort);
 
       router.push(`/marketplace?${params.toString()}`);
     },
-    [router, currentCategory, currentLevel, query]
+    [router, currentCategory, currentLevel, query, currentSort]
   );
 
   return (
@@ -102,6 +113,28 @@ export function MarketplaceFilters({
             {lvl === "All" ? "All Levels" : lvl.charAt(0).toUpperCase() + lvl.slice(1)}
           </button>
         ))}
+      </div>
+
+      {/* Sort dropdown */}
+      <div className="flex items-center gap-2 pt-2">
+        <ArrowUpDown className="h-4 w-4 text-zinc-500" />
+        <span className="text-sm text-zinc-400">Sort by:</span>
+        <div className="flex flex-wrap gap-1">
+          {sortOptions.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => updateFilters("sort", option.value)}
+              className={cn(
+                "rounded-full px-3 py-1 text-xs font-medium transition-all duration-200",
+                currentSort === option.value
+                  ? "bg-indigo-600 text-white"
+                  : "bg-zinc-800/50 text-zinc-500 hover:bg-zinc-700/50 hover:text-zinc-300"
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

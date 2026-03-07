@@ -21,10 +21,11 @@ const levels = ["All", "beginner", "intermediate", "advanced"];
 export default async function MarketplacePage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; level?: string; q?: string }>;
+  searchParams: Promise<{ category?: string; level?: string; q?: string; sort?: string }>;
 }) {
   const params = await searchParams;
   const session = await auth();
+  const sort = params.sort || "newest";
 
   const where: Record<string, unknown> = { published: true };
 
@@ -41,14 +42,29 @@ export default async function MarketplacePage({
     ];
   }
 
+  // Build orderBy based on sort parameter
+  let orderBy: Record<string, string> = { createdAt: "desc" };
+  if (sort === "title_asc") {
+    orderBy = { title: "asc" };
+  }
+  // For popularity and lessons, we'll sort after fetching since they require _count
+
   const courses = await prisma.course.findMany({
     where,
     include: {
       tutor: { select: { id: true, name: true, avatar: true } },
       _count: { select: { enrollments: true, lessons: true } },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy,
   });
+
+  // Sort by enrollments or lessons count for non-date sorts
+  let sortedCourses = [...courses];
+  if (sort === "popular") {
+    sortedCourses.sort((a, b) => b._count.enrollments - a._count.enrollments);
+  } else if (sort === "lessons") {
+    sortedCourses.sort((a, b) => b._count.lessons - a._count.lessons);
+  }
 
   // Get user's wishlist if logged in
   let wishlistCourseIds: string[] = [];
@@ -85,9 +101,10 @@ export default async function MarketplacePage({
         currentCategory={params.category}
         currentLevel={params.level}
         currentQuery={params.q}
+        currentSort={sort}
       />
 
-      {courses.length === 0 ? (
+      {sortedCourses.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <Search className="h-12 w-12 text-zinc-600 mb-4" />
           <h3 className="text-lg font-medium text-zinc-300">
@@ -99,7 +116,7 @@ export default async function MarketplacePage({
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {courses.map((course) => (
+          {sortedCourses.map((course) => (
             <CourseCard
               key={course.id}
               course={course}
