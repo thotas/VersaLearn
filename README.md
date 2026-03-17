@@ -69,7 +69,7 @@ npx tsx prisma/seed.ts
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Open [http://localhost:5192](http://localhost:5192)
 
 ### Test Accounts (password: `password123`)
 
@@ -87,7 +87,7 @@ Open [http://localhost:3000](http://localhost:3000)
 |----------|---------|-------------|
 | `DATABASE_URL` | `file:./dev.db` | SQLite database path |
 | `NEXTAUTH_SECRET` | dev secret | JWT signing secret (change in production) |
-| `NEXTAUTH_URL` | `http://localhost:3000` | Application URL |
+| `NEXTAUTH_URL` | `http://localhost:5192` | Application URL |
 
 ## Architecture Overview
 

@@ -55,8 +55,6 @@ export default async function LessonPage({
   const prevLesson = currentIndex > 0 ? course.lessons[currentIndex - 1] : null;
   const nextLesson = currentIndex < course.lessons.length - 1 ? course.lessons[currentIndex + 1] : null;
 
-  // Check if this is the last lesson completed
-  const isCompleted = enrollment.lastLessonId === lessonId && enrollment.progress === 100;
 
   return (
     <div className="min-h-screen bg-zinc-950">

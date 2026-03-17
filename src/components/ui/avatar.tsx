@@ -28,6 +28,7 @@ export function Avatar({ name, src, size = "md", className, ...props }: AvatarPr
         )}
         {...props}
       >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={src}
           alt={name}

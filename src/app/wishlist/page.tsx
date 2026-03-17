@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, BookOpen, Users, ArrowLeft } from "lucide-react";
+import { Heart, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { CourseCard } from "@/components/course-card";
 
@@ -54,7 +54,7 @@ export default async function WishlistPage() {
           <h1 className="text-3xl font-bold text-white">My Wishlist</h1>
         </div>
         <p className="mt-2 text-zinc-400">
-          Courses you've saved for later
+          Courses you&apos;ve saved for later
         </p>
       </div>
 

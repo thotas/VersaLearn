@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
-  BookOpen,
   GraduationCap,
   Heart,
   LayoutDashboard,
@@ -18,8 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { Avatar } from "./ui/avatar";
-import { Badge } from "./ui/badge";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import { getWishlistCount } from "@/actions/wishlist";
 
 interface NavbarProps {

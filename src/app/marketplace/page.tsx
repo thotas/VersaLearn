@@ -59,7 +59,7 @@ export default async function MarketplacePage({
   });
 
   // Sort by enrollments or lessons count for non-date sorts
-  let sortedCourses = [...courses];
+  const sortedCourses = [...courses];
   if (sort === "popular") {
     sortedCourses.sort((a, b) => b._count.enrollments - a._count.enrollments);
   } else if (sort === "lessons") {
