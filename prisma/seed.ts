@@ -111,7 +111,8 @@ async function main() {
     },
   });
 
-  const course4 = await prisma.course.create({
+  // Create courses (course4-6 stored in DB but not referenced further)
+  await prisma.course.create({
     data: {
       title: "Node.js Backend Masterclass",
       slug: "nodejs-backend-masterclass",
@@ -124,7 +125,7 @@ async function main() {
     },
   });
 
-  const course5 = await prisma.course.create({
+  await prisma.course.create({
     data: {
       title: "Machine Learning Fundamentals",
       slug: "ml-fundamentals",
@@ -138,7 +139,7 @@ async function main() {
     },
   });
 
-  const course6 = await prisma.course.create({
+  await prisma.course.create({
     data: {
       title: "CSS Mastery & Modern Layouts",
       slug: "css-mastery-modern-layouts",

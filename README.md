@@ -2,7 +2,7 @@
 
 > Connect with expert tutors, discover curated courses, and accelerate your learning journey.
 
-A full-stack tutor marketplace where tutors register, design courses, and publish them for students to discover, enroll in, and study. Includes a blog platform and student calendar for scheduling study sessions. Built with Next.js 16, TypeScript, and SQLite.
+A full-stack tutor marketplace where tutors register, design courses, and publish them for students to discover, enroll in, and study. Includes a blog platform, student calendar for scheduling study sessions, and wishlist functionality. Built with Next.js 16.2, TypeScript, and SQLite.
 
 ## Features
 
@@ -14,11 +14,13 @@ A full-stack tutor marketplace where tutors register, design courses, and publis
 - **Dashboard** — Overview of total courses, enrolled students, and published courses
 
 ### For Students
-- **Course Discovery** — Browse the marketplace with search, category, and level filters
+- **Course Discovery** — Browse the marketplace with search, category, level filters, and sorting
+- **Wishlist** — Save courses to a personal wishlist for later enrollment
 - **Enrollment** — One-click enrollment in any published course (free for Phase 1)
 - **Progress Tracking** — Visual progress bars on enrolled courses
+- **Continue Learning** — Resume from where you left off with the last accessed lesson
 - **Calendar** — Schedule study sessions and deadlines with color-coded events
-- **Dashboard** — View enrolled courses, average progress, and upcoming events
+- **Dashboard** — View enrolled courses, wishlist, average progress, and upcoming events
 
 ### Community
 - **Blog Platform** — Write and publish blog posts with markdown-style formatting
@@ -29,7 +31,7 @@ A full-stack tutor marketplace where tutors register, design courses, and publis
 
 | Layer | Technology | Why |
 |-------|-----------|-----|
-| Framework | **Next.js 16** (App Router) | Full-stack React with server components, server actions, and API routes |
+| Framework | **Next.js 16.2** (App Router) | Full-stack React with server components, server actions, and API routes |
 | Language | **TypeScript** | Type safety across the entire stack |
 | Database | **SQLite + Prisma 6** | Zero-config, local-first persistence — perfect for Phase 1 |
 | Auth | **NextAuth.js v5** (beta) | Credential-based auth with JWT sessions and role-based access |
@@ -110,8 +112,9 @@ src/
 │   ├── login/              # Credential login
 │   ├── register/           # Role-based registration (student/tutor)
 │   ├── profile/            # User profile editing
-│   ├── marketplace/        # Course discovery with search & filters
+│   ├── marketplace/        # Course discovery with search, filters & sorting
 │   ├── courses/[slug]/     # Course detail with lessons & enrollment
+│   ├── wishlist/           # Student wishlist management
 │   ├── dashboard/
 │   │   ├── tutor/          # Course management, stats
 │   │   └── student/        # Enrolled courses, calendar
@@ -122,6 +125,7 @@ src/
 ├── actions/                # Server actions (CRUD operations)
 │   ├── auth.ts             # Login, register
 │   ├── courses.ts          # Course & lesson CRUD, enrollment
+│   ├── wishlist.ts         # Wishlist management
 │   ├── blog.ts             # Blog post CRUD
 │   ├── calendar.ts         # Calendar event CRUD
 │   └── profile.ts          # Profile updates
@@ -131,6 +135,7 @@ src/
 │   ├── layout-wrapper.tsx   # Root layout with session provider
 │   ├── marketplace-filters.tsx  # Search & filter controls
 │   ├── enroll-button.tsx    # Course enrollment with loading states
+│   ├── wishlist-button.tsx  # Add/remove courses from wishlist
 │   ├── tutor-course-manager.tsx # Course CRUD interface
 │   └── student-calendar.tsx # Calendar event management
 ├── lib/                    # Shared utilities
